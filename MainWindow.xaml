@@ -42,7 +42,7 @@
                         <Label Margin="10,15,0,0" Target="{Binding ElementName=updateFrequencySec}" Content="Update Frequency (seconds):" VerticalAlignment="Center"/>
                         <ui:SymbolIcon ToolTipService.InitialShowDelay="0" ToolTipService.HasDropShadow="True" ToolTipService.ToolTip="Lower values may impact performance" Symbol="info20" FontSize="16" Margin="5,12,0,0" Foreground="{ui:ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     </StackPanel>
-                    <ui:NumberBox Margin="10,0" x:Name="updateFrequencySec" MaxDecimalPlaces="0" Value="{Binding UpdateFrequencyValue}" SmallChange="1" Minimum="0" PreviewTextInput="NumberValidationTextBox" />
+                    <ui:NumberBox Margin="10,0" x:Name="updateFrequencySec" MaxDecimalPlaces="0" Value="{Binding UpdateFrequencyValue}" SmallChange="1" Minimum="1" PreviewTextInput="NumberValidationTextBox" />
 
 
 

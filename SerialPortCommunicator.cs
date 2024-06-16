@@ -19,7 +19,7 @@ public class SerialPortCommunicator {
 
     }
 
-    private readonly SerialPort port;
+    public readonly SerialPort port;
     const string DEVICE_INSTANCE_ID = "USB35INCHIPSV2"; // This is what it appears to be not sure if always true
 
     static EncodedBytes EncodeIntToBuffer(int intToDisplay, int controlCode = 130) {

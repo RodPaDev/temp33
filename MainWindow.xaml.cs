@@ -54,7 +54,6 @@ namespace UnykachAio240Display {
                     OnPropertyChanged(nameof(SelectedHardwareItem));
                     this.BindSensorItems();
                     this.UpdateMeasurementNameText();
-                    this.HandleDisplayTimer();
                 }
             }
         }
@@ -126,13 +125,18 @@ namespace UnykachAio240Display {
             this.SensorItems = [];
             /* Text Block */
             this.DisplayValueText = "33";
-            this.UpdateFrequencyValue = 5;
+            this.UpdateFrequencyValue = 1;
 
 
             this.BindHardwareItems();
             this.BindSensorItems();
             this.DataContext = this;
             InitializeComponent();
+            if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null) {
+                this._app.UpdateSettings(this.SelectedSensorItem.Uid, (int)this.UpdateFrequencyValue);
+            }
+
+            app.DataUpdated += App_DataUpdated;
         }
 
         protected virtual void OnPropertyChanged(string propertyName) {
@@ -189,49 +193,62 @@ namespace UnykachAio240Display {
             this.MeasurementNameText = $"{hardwareType} {sensorType}";
         }
 
-        private void HandleDisplayTimer() {
-            this._timer?.Stop();
-            this._timer = null;
-            _timer = new() {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += UpdateDisplayValueText;
+        private void App_DataUpdated(object? sender, DataEventArgs e) {
+            Dispatcher.Invoke(() => {
+                var nextValue = e.DataValue;
 
-            _timer.Start();
+                if (_app._settings.sensorIdentifier == null || SelectedSensorItem?.Uid == null)
+                    goto UpdateDisplay;
+
+                if (_app._settings.sensorIdentifier == SelectedSensorItem.Uid)
+                    goto UpdateDisplay;
+
+                float? value = _app.HardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
+                if (!value.HasValue)
+                    goto UpdateDisplay;
+
+                nextValue = value.Value;
+
+            // sexy goto :3
+            UpdateDisplay:
+                UpdateDisplayValueText(nextValue);
+            });
         }
 
-        private void UpdateDisplayValueText(object? sender, EventArgs e) {
-            if (this.SelectedSensorItem != null) {
-                float? value = this._app.HardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
-                if (value.HasValue) {
-                    string text = Math.Truncate(value.Value).ToString();
-                    if (text.Length == 1) {
-                        text = "0" + text;
-                    }
 
-                    DisplayValueText = text[..2];
-                    SensorValueText = value.Value.ToString("F2");
-                }
+        private void UpdateDisplayValueText(float newValue) {
+            string text = Math.Truncate(newValue).ToString();
+            if (text.Length == 1) {
+                text = "0" + text;
             }
+            this.DisplayValueText = text[..2];
+            this.SensorValueText = newValue.ToString("F2");
         }
 
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e) {
             Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
+            bool isMatch = regex.IsMatch(e.Text);
+
+            if (!isMatch) {
+                TextBox? textBox = sender as TextBox;
+                if (textBox == null) {
+                    e.Handled = true;
+                    return;
+                }
+                string newText = textBox.Text.Insert(textBox.SelectionStart, e.Text);
+                if (int.TryParse(newText, out int value)) {
+                    e.Handled = value <= 0;
+                } else {
+                    e.Handled = true;
+                }
+            } else {
+                e.Handled = true;
+            }
         }
 
         private void SaveChanges__Click(object sender, EventArgs e) {
-
-            // TODO: Send this by update frequency. Delegate task to background worker maybe??
-            if (this.SelectedSensorItem != null) {
-                float? value = this._app.HardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
-                if (value.HasValue) {
-                 
-                    int intVal = (int)Math.Truncate(value.Value);
-                    this._app.Spc.SendInt(intVal);
-
-                    
-                }
+            if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null) {
+                this._app.UpdateSettings(this.SelectedSensorItem.Uid, (int)this.UpdateFrequencyValue);
             }
         }
 

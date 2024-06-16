@@ -1,7 +1,6 @@
-﻿using SerialCommunicator;
+﻿
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -17,14 +16,9 @@ namespace UnykachAio240Display {
         void Show();
     }
 
-    public class HardwareSelection {
-        private string _hardwareType;
-        public HardwareSelection(string hardwareType) {
-            this._hardwareType = hardwareType;
-        }
-
+    public class HardwareSelection(string hardwareType) {
         public Tuple<string, string> GetName(string sensorName, string sensorType) {
-            return Tuple.Create($"{this._hardwareType} {sensorType}", sensorType);
+            return Tuple.Create($"{hardwareType} {sensorType}", sensorType);
         }
     }
 
@@ -125,35 +119,59 @@ namespace UnykachAio240Display {
             this.SensorItems = [];
             /* Text Block */
             this.DisplayValueText = "33";
-            this.UpdateFrequencyValue = 1;
+
+            /* Load Settings */
 
 
             this.BindHardwareItems();
             this.BindSensorItems();
+            this.LoadFromSettings();
+
             this.DataContext = this;
             InitializeComponent();
-            if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null) {
-                this._app.UpdateSettings(this.SelectedSensorItem.Uid, (int)this.UpdateFrequencyValue);
+            if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null && this.SelectedHardwareItem?.Uid != null) {
+                this._app.UpdateSettings(this.SelectedSensorItem.Uid, this.SelectedHardwareItem.Uid, (int)this.UpdateFrequencyValue);
             }
 
             app.DataUpdated += App_DataUpdated;
+        }
+
+        private void LoadFromSettings() {
+            this.UpdateFrequencyValue = this._app.settings.UpdateFrequencySeconds;
+            if (this._app.settings.HardwareIdentifier != null) {
+                this.SelectedHardwareItem = HardwareItems.FirstOrDefault(h => h.Uid == this._app.settings.HardwareIdentifier);
+                if (this.SelectedHardwareItem != null) {
+                    BindSensorItems();
+                    this.SelectedSensorItem = SensorItems.FirstOrDefault(s => s.Uid == this._app.settings.SensorIdentifier);
+                }
+            }
         }
 
         protected virtual void OnPropertyChanged(string propertyName) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private static SysWinCtrl.ComboBoxItem CreateHardwareComboBoxItem(HardwareOption hardwareOption) {
+            return new SysWinCtrl.ComboBoxItem {
+                Content = $"[{hardwareOption.Type}] - {hardwareOption.Name}",
+                Uid = hardwareOption.Identifier,
+                Tag = new Metadata(hardwareOption.Type)
+            };
+        }
 
+        private static SysWinCtrl.ComboBoxItem CreateSensorComboBoxItem(SensorOption sensorOption) {
+            return new SysWinCtrl.ComboBoxItem {
+                Content = sensorOption.Name,
+                Uid = sensorOption.Identifier,
+                Tag = new Metadata(sensorOption.Type)
+            };
+        }
 
         private void BindHardwareItems() {
             var hardwareOptions = this._app.HardwareMonitor.GetAvailableHardware();
             HardwareItems.Clear();
             foreach (var hardwareOption in hardwareOptions) {
-                var item = new SysWinCtrl.ComboBoxItem {
-                    Content = $"[{hardwareOption.Type}] - {hardwareOption.Name}",
-                    Uid = hardwareOption.Identifier,
-                    Tag = new Metadata(hardwareOption.Type)
-                };
+                var item = CreateHardwareComboBoxItem(hardwareOption);
                 this.HardwareItems.Add(item);
                 if (SelectedHardwareItem == null) {
                     this.SelectedHardwareItem = item;
@@ -164,14 +182,10 @@ namespace UnykachAio240Display {
         private void BindSensorItems() {
             if (SelectedHardwareItem != null) {
                 var sensorOptions = this._app.HardwareMonitor.GetSensorOptions(SelectedHardwareItem.Uid);
-                this.SelectedSensorItem = null;
+                //this.SelectedSensorItem = null;
                 this.SensorItems.Clear();
                 foreach (var sensorOption in sensorOptions) {
-                    var item = new SysWinCtrl.ComboBoxItem {
-                        Content = sensorOption.Name,
-                        Uid = sensorOption.Identifier,
-                        Tag = new Metadata(sensorOption.Type)
-                    };
+                    var item = CreateSensorComboBoxItem(sensorOption);
                     this.SensorItems.Add(item);
                     if (SelectedSensorItem == null) {
                         this.SelectedSensorItem = item;
@@ -197,10 +211,10 @@ namespace UnykachAio240Display {
             Dispatcher.Invoke(() => {
                 var nextValue = e.DataValue;
 
-                if (_app._settings.sensorIdentifier == null || SelectedSensorItem?.Uid == null)
+                if (_app.settings.SensorIdentifier == null || SelectedSensorItem?.Uid == null)
                     goto UpdateDisplay;
 
-                if (_app._settings.sensorIdentifier == SelectedSensorItem.Uid)
+                if (_app.settings.SensorIdentifier == SelectedSensorItem.Uid)
                     goto UpdateDisplay;
 
                 float? value = _app.HardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
@@ -247,8 +261,8 @@ namespace UnykachAio240Display {
         }
 
         private void SaveChanges__Click(object sender, EventArgs e) {
-            if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null) {
-                this._app.UpdateSettings(this.SelectedSensorItem.Uid, (int)this.UpdateFrequencyValue);
+            if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null && this.SelectedHardwareItem?.Uid != null) {
+                this._app.UpdateSettings(this.SelectedSensorItem.Uid, this.SelectedHardwareItem.Uid, (int)this.UpdateFrequencyValue);
             }
         }
 

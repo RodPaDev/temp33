@@ -1,4 +1,5 @@
 ﻿using SerialCommunicator;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
 using SystemHardwareInfo;
@@ -16,21 +17,11 @@ namespace UnykachAio240Display {
         }
     }
 
-    public class Settings {
-        public int updateFrequencySeconds;
-        public string? sensorIdentifier;
-
-        public Settings(string? sensorIdentifier, int updateFrequencySeconds = 1) {
-            this.updateFrequencySeconds = updateFrequencySeconds;
-            this.sensorIdentifier = sensorIdentifier;
-        }
-    }
-
     public partial class App :Application {
 
         private MainWindow? _mainWindow;
         private DispatcherTimer? _timer;
-        public Settings _settings;
+        public Settings settings;
 
         public readonly SerialPortCommunicator Spc;
         public readonly HardwareMonitor HardwareMonitor;
@@ -40,7 +31,8 @@ namespace UnykachAio240Display {
         public App() {
             this.Spc = new SerialPortCommunicator();
             this.HardwareMonitor = new HardwareMonitor();
-            this._settings = new Settings(null);
+            this.settings = Settings.Load();
+            Trace.WriteLine($"Loaded settings: {this.settings.SensorIdentifier}, {this.settings.HardwareIdentifier} {this.settings.UpdateFrequencySeconds}");
             this.Init();
             this.HandleSerialUpdateTimer();
         }
@@ -88,21 +80,24 @@ namespace UnykachAio240Display {
             this._timer?.Stop();
             this._timer = null;
             _timer = new() {
-                Interval = TimeSpan.FromSeconds(this._settings.updateFrequencySeconds)
+                Interval = TimeSpan.FromSeconds(this.settings.UpdateFrequencySeconds)
             };
             _timer.Tick += SendSerialUpdate;
 
             _timer.Start();
         }
 
-        public void UpdateSettings( string sensorIdentifier,int updateFrequencySeconds) {
-            this._settings = new Settings(sensorIdentifier, updateFrequencySeconds);
+        public void UpdateSettings(string sensorIdentifier, string hardwareIdentifier, int updateFrequencySeconds) {
+            this.settings.SensorIdentifier = sensorIdentifier;
+            this.settings.HardwareIdentifier = hardwareIdentifier;
+            this.settings.UpdateFrequencySeconds = updateFrequencySeconds;
+            this.settings.Save();
             this.HandleSerialUpdateTimer();
         }   
 
         private void SendSerialUpdate(object? sender, EventArgs e) {
-            if (this._settings?.sensorIdentifier != null) {
-                float? value = this.HardwareMonitor.GetMeasurement(this._settings.sensorIdentifier);
+            if (this.settings?.SensorIdentifier != null) {
+                float? value = this.HardwareMonitor.GetMeasurement(this.settings.SensorIdentifier);
                 if (value.HasValue) {
 
                     int intVal = (int)Math.Truncate(value.Value);

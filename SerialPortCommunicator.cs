@@ -1,6 +1,7 @@
 ﻿using System.Management;
 using System.IO.Ports;
 using System.Diagnostics;
+using UnykachAio240Display;
 namespace SerialCommunicator;
 
 public class SerialPortCommunicator {
@@ -20,7 +21,6 @@ public class SerialPortCommunicator {
     }
 
     public readonly SerialPort port;
-    const string DEVICE_INSTANCE_ID = "USB35INCHIPSV2"; // This is what it appears to be not sure if always true
 
     static EncodedBytes EncodeIntToBuffer(int intToDisplay, int controlCode = 130) {
         // not sure what these do, but keeping them separate for future referncing
@@ -62,7 +62,7 @@ public class SerialPortCommunicator {
         using var searcher = new ManagementObjectSearcher("SELECT * FROM WIN32_SerialPort");
         foreach (ManagementObject queryObj in searcher.Get().Cast<ManagementObject>()) {
             if (queryObj["PNPDeviceID"] is string pnpDeviceId) {
-                if (pnpDeviceId.Contains(DEVICE_INSTANCE_ID)) {
+                if (pnpDeviceId.Contains(AppConstants.DEVICE_INSTANCE_ID)) {
                     if (queryObj["DeviceID"] is string deviceId) {
                         return deviceId;
                     } 

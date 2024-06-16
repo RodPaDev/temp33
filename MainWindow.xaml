@@ -33,7 +33,7 @@
                     </StackPanel.Resources>
 
                     <Label Margin="10,0,0,0" Target="{Binding ElementName=hardwareSelector}" Content="Hardware to monitor:" />
-                    <ComboBox x:Name="hardwareSelector" ItemsSource="{Binding HardwareItems}" SelectedItem="{Binding SelectedHardwareItem}"/>
+                    <ComboBox x:Name="hardwareSelector" ItemsSource="{Binding HardwareItems}" SelectedItem="{Binding SelectedHardwareItem, Mode=TwoWay}"/>
 
                     <Label Margin="10,15,0,0" Target="{Binding ElementName=sensorSelector}" Content="Sensor to monitor:" />
                     <ComboBox x:Name="sensorSelector" ItemsSource="{Binding SensorItems}" SelectedItem="{Binding SelectedSensorItem, Mode=TwoWay}" />

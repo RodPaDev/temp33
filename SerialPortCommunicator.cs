@@ -3,7 +3,7 @@ using System.IO.Ports;
 using System.Diagnostics;
 namespace SerialCommunicator;
 
-class SerialPortCommunicator {
+public class SerialPortCommunicator {
 
     public struct EncodedBytes {
         public byte[] Bytes;
@@ -76,6 +76,7 @@ class SerialPortCommunicator {
     public void Open() {
         if (!this.port.IsOpen) {
             this.port.Open();
+            Trace.WriteLine("Port Opened");
         }
     }
 

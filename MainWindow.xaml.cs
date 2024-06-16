@@ -36,10 +36,8 @@ namespace UnykachAio240Display {
     }
 
     public partial class MainWindow :IWindow, INotifyPropertyChanged {
+        private App _app;
         private DispatcherTimer? _timer;
-        // TODO: These shouldn't be coupled to the main window but a process the window can access so that the background process can access it too??
-        private readonly SerialPortCommunicator _spc;
-        private readonly HardwareMonitor _hardwareMonitor;
 
         private HardwareSelection? hardwareSelection;
 
@@ -118,8 +116,10 @@ namespace UnykachAio240Display {
             }
         }
 
-        public MainWindow() {
+        public MainWindow(App app) {
             /* Combo Boxes */
+            this._app = app;
+
             this.SelectedHardwareItem = null;
             this.HardwareItems = [];
             this.SelectedSensorItem = null;
@@ -129,40 +129,20 @@ namespace UnykachAio240Display {
             this.UpdateFrequencyValue = 5;
 
 
-            this._hardwareMonitor = new HardwareMonitor();
             this.BindHardwareItems();
             this.BindSensorItems();
-            this._spc = new SerialPortCommunicator();
             this.DataContext = this;
             InitializeComponent();
-            OpenSPC();
         }
 
         protected virtual void OnPropertyChanged(string propertyName) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void OpenSPC() {
-            MessageBox messageBox = new MessageBox() {
-                Title = "Connection Failed",
-                Content = new TextBlock {
 
-                    Text = "Connection to LED screen failed. Make sure you only have one program running.",
-                    TextWrapping = SysWin.TextWrapping.Wrap,
-                },
-
-            };
-            try {
-                this._spc.Open();
-            } catch {
-                messageBox.ShowDialogAsync();
-                this.Close();
-            }
-
-        }
 
         private void BindHardwareItems() {
-            var hardwareOptions = this._hardwareMonitor.GetAvailableHardware();
+            var hardwareOptions = this._app.HardwareMonitor.GetAvailableHardware();
             HardwareItems.Clear();
             foreach (var hardwareOption in hardwareOptions) {
                 var item = new SysWinCtrl.ComboBoxItem {
@@ -179,7 +159,7 @@ namespace UnykachAio240Display {
 
         private void BindSensorItems() {
             if (SelectedHardwareItem != null) {
-                var sensorOptions = this._hardwareMonitor.GetSensorOptions(SelectedHardwareItem.Uid);
+                var sensorOptions = this._app.HardwareMonitor.GetSensorOptions(SelectedHardwareItem.Uid);
                 this.SelectedSensorItem = null;
                 this.SensorItems.Clear();
                 foreach (var sensorOption in sensorOptions) {
@@ -222,7 +202,7 @@ namespace UnykachAio240Display {
 
         private void UpdateDisplayValueText(object? sender, EventArgs e) {
             if (this.SelectedSensorItem != null) {
-                float? value = this._hardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
+                float? value = this._app.HardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
                 if (value.HasValue) {
                     string text = Math.Truncate(value.Value).ToString();
                     if (text.Length == 1) {
@@ -244,10 +224,11 @@ namespace UnykachAio240Display {
 
             // TODO: Send this by update frequency. Delegate task to background worker maybe??
             if (this.SelectedSensorItem != null) {
-                float? value = this._hardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
+                float? value = this._app.HardwareMonitor.GetMeasurement(SelectedSensorItem.Uid);
                 if (value.HasValue) {
+                 
                     int intVal = (int)Math.Truncate(value.Value);
-                    this._spc.SendInt(intVal);
+                    this._app.Spc.SendInt(intVal);
 
                     
                 }

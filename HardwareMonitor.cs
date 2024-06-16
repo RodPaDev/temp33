@@ -101,5 +101,9 @@ namespace SystemHardwareInfo {
             }
             return null;
         }
+
+        public void Close() {
+            _computer.Close();
+        }
     }
 }

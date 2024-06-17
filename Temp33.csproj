@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <AdditionalFiles Remove="app.manifest" />
+    <AdditionalFiles Remove="LICENSE" />
   </ItemGroup>
 
   <ItemGroup>

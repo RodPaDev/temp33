@@ -5,9 +5,10 @@ using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Windows.Threading;
 using SystemHardwareInfo;
-using Wpf.Ui.Controls;
+using Ui = Wpf.Ui.Controls;
 using SysWin = System.Windows;
 using SysWinCtrl = System.Windows.Controls;
+using SnackbarService = Wpf.Ui.SnackbarService;
 
 
 namespace UnykachAio240Display {
@@ -34,6 +35,7 @@ namespace UnykachAio240Display {
         private DispatcherTimer? _timer;
 
         private HardwareSelection? hardwareSelection;
+        public SnackbarService SnackbarService { get; set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -110,6 +112,8 @@ namespace UnykachAio240Display {
         }
 
         public MainWindow(App app) {
+            this.SnackbarService = new SnackbarService();
+
             /* Combo Boxes */
             this._app = app;
 
@@ -129,6 +133,8 @@ namespace UnykachAio240Display {
 
             this.DataContext = this;
             InitializeComponent();
+            this.SnackbarService.SetSnackbarPresenter(SnackbarPresenter);
+
             if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null && this.SelectedHardwareItem?.Uid != null) {
                 this._app.UpdateSettings(this.SelectedSensorItem.Uid, this.SelectedHardwareItem.Uid, (int)this.UpdateFrequencyValue);
             }
@@ -140,8 +146,8 @@ namespace UnykachAio240Display {
             this.UpdateFrequencyValue = this._app.settings.UpdateFrequencySeconds;
             if (this._app.settings.HardwareIdentifier != null) {
                 this.SelectedHardwareItem = HardwareItems.FirstOrDefault(h => h.Uid == this._app.settings.HardwareIdentifier);
+                BindSensorItems();
                 if (this.SelectedHardwareItem != null) {
-                    BindSensorItems();
                     this.SelectedSensorItem = SensorItems.FirstOrDefault(s => s.Uid == this._app.settings.SensorIdentifier);
                 }
             }
@@ -188,6 +194,8 @@ namespace UnykachAio240Display {
                     var item = CreateSensorComboBoxItem(sensorOption);
                     this.SensorItems.Add(item);
                     if (SelectedSensorItem == null) {
+                        this.SelectedSensorItem = item;
+                    } else if (SelectedSensorItem.Uid == item.Uid) {
                         this.SelectedSensorItem = item;
                     }
                 }
@@ -244,7 +252,7 @@ namespace UnykachAio240Display {
             bool isMatch = regex.IsMatch(e.Text);
 
             if (!isMatch) {
-                TextBox? textBox = sender as TextBox;
+                Ui.TextBox? textBox = sender as Ui.TextBox;
                 if (textBox == null) {
                     e.Handled = true;
                     return;
@@ -262,6 +270,13 @@ namespace UnykachAio240Display {
 
         private void SaveChanges__Click(object sender, EventArgs e) {
             if (this.SelectedSensorItem?.Uid != null && this.UpdateFrequencyValue != null && this.SelectedHardwareItem?.Uid != null) {
+                this.SnackbarService.Show(
+                    "Settings Saved",
+                    "Settings have been saved successfully. You can now close this window.",
+                    Ui.ControlAppearance.Success,
+                    new Ui.SymbolIcon(Ui.SymbolRegular.Save16, 14, true),
+                    TimeSpan.FromSeconds(10)
+                );
                 this._app.UpdateSettings(this.SelectedSensorItem.Uid, this.SelectedHardwareItem.Uid, (int)this.UpdateFrequencyValue);
             }
         }

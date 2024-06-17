@@ -9,11 +9,14 @@
         ExtendsContentIntoTitleBar="True"
         ui:Design.Background="{ui:ThemeResource ApplicationBackgroundBrush}"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        ResizeMode="NoResize"
         Width="690"
         Height="369"
+        Title="Temp33"
+        Icon="Assets/temp33.ico"
         mc:Ignorable="d">
     <StackPanel>
-        <ui:TitleBar Title="Unykach Aquastorm LED Display"/>
+        <ui:TitleBar Title="Unykach Aquastorm LED Display" CanMaximize="False" ShowMaximize="False" ShowMinimize="True" Icon="{ui:ImageIcon 'pack://application:,,,/UnykachAio240Display;component/Assets/temp33.ico' }"/>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*"/>
@@ -23,8 +26,11 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            
-             <ui:Card Grid.Row="0" Margin="8" Grid.Column="0">
+            <Grid IsHitTestVisible="True" Grid.ColumnSpan="2" Grid.RowSpan="2" x:Name="Overlay" Panel.ZIndex="1">
+                <ui:SnackbarPresenter  Panel.ZIndex="2" x:Name="SnackbarPresenter" VerticalAlignment="Top" IsHitTestVisible="True" />
+            </Grid>
+
+            <ui:Card Grid.Row="0" Margin="8" Grid.Column="0">
                 <StackPanel>
                     <StackPanel.Resources>
                         <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
@@ -58,10 +64,11 @@
                 </StackPanel>
                 <ui:Button Click="SaveChanges__Click" Grid.Row="1" Grid.Column="1" Appearance="Primary" Content="Save Changes" HorizontalAlignment="Center" Margin="0,10"/>
             </StackPanel>
-            
-            
 
-        <ui:HyperlinkButton Margin="0,10,10,0" Grid.Row="1" Grid.Column="2" Icon="{ui:SymbolIcon CodeBlock20}" NavigateUri="https://github.com/rodpadev" Content="Made with ❤️ by rodpadev" HorizontalAlignment="Center"/>
+
+
+            <ui:HyperlinkButton Margin="0,10,10,0" Grid.Row="1" Grid.Column="2" Icon="{ui:SymbolIcon CodeBlock20}" NavigateUri="https://github.com/rodpadev" Content="Made with ❤️ by rodpadev" HorizontalAlignment="Center"/>
         </Grid>
+
     </StackPanel>
     </ui:FluentWindow>

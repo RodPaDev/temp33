@@ -1,9 +1,13 @@
 ﻿using SerialCommunicator;
 using System.Diagnostics;
-using System.Windows;
 using System.Windows.Threading;
+using System.Windows.Forms;
+using System.Drawing;
 using SystemHardwareInfo;
+using SysWin = System.Windows;
 using Ui = Wpf.Ui.Controls;
+using System.IO;
+using System;
 
 namespace UnykachAio240Display {
 
@@ -17,22 +21,26 @@ namespace UnykachAio240Display {
         }
     }
 
-    public partial class App :Application {
+    public partial class App :SysWin.Application {
 
         private MainWindow? _mainWindow;
         private DispatcherTimer? _timer;
         public Settings settings;
+        private NotifyIcon _notifyIcon;
 
         public readonly SerialPortCommunicator Spc;
         public readonly HardwareMonitor HardwareMonitor;
 
         public bool isOpenFail = false;
+        private bool isExit = false;
+        private bool isFirstLaunch = true;
+        private int? prevIntVal = null;
 
         public App() {
             this.Spc = new SerialPortCommunicator();
             this.HardwareMonitor = new HardwareMonitor();
             this.settings = Settings.Load();
-            Trace.WriteLine($"Loaded settings: {this.settings.SensorIdentifier}, {this.settings.HardwareIdentifier} {this.settings.UpdateFrequencySeconds}");
+            this.isFirstLaunch = this.settings.HardwareIdentifier == null;
             this.Init();
             this.HandleSerialUpdateTimer();
         }
@@ -51,29 +59,90 @@ namespace UnykachAio240Display {
             }
         }
 
-        protected void Close() {
+        protected void Quit() {
             this.Spc.Close();
             this.HardwareMonitor.Close();
             Environment.Exit(0);
         }
 
-        protected override void OnStartup(StartupEventArgs e) {
+        protected override void OnStartup(SysWin.StartupEventArgs e) {
             base.OnStartup(e);
             this._mainWindow = new MainWindow(this);
 
-            if(this.isOpenFail) {
+            /* Error if there is already an instance of a program running that is trying to connect to the LED screen */
+            if (this.isOpenFail) {
                 Ui.MessageBox messageBox = new Ui.MessageBox() {
                     Title = "Connection Failed",
                     Content = new Ui.TextBlock {
 
                         Text = "Connection to LED screen failed. Make sure you only have one program running.",
-                        TextWrapping = TextWrapping.Wrap,
+                        TextWrapping = SysWin.TextWrapping.Wrap,
                     },
                 };
                 messageBox.ShowDialogAsync();
-                this.Close();
+                this.Quit();
             }
-            this._mainWindow.Show();
+
+            this.InitNotifyIcon();
+            if (isFirstLaunch) {
+                this.ShowMainWindow();
+                this._mainWindow.SnackbarService.Show(
+                    "Minimize Instead of Closing", 
+                    "Clicking the 'Close' button will minimize the application to the system tray. To fully exit, right-click the tray icon and select 'Close'.",
+                    Ui.ControlAppearance.Secondary, 
+                    new Ui.SymbolIcon(Ui.SymbolRegular.Warning12, 14, true), 
+                    TimeSpan.FromSeconds(10)
+                );
+            } 
+
+        }
+
+
+
+        private void InitNotifyIcon() {
+            /* NotifyIcon */
+            if (this._mainWindow != null) {
+
+
+                this._mainWindow.Closing += MainWindow_Closing;
+
+                Stream iconStream = GetResourceStream(new Uri("pack://application:,,,/UnykachAio240Display;component/Assets/temp33.ico")).Stream;
+                Icon icon = new(iconStream);
+                // Set up the notify icon
+                _notifyIcon = new NotifyIcon {
+                    Icon = icon,
+                    ContextMenuStrip = new ContextMenuStrip(),
+                    Visible = true
+                };
+                ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+                contextMenuStrip.Items.Add("Open", null, (s, args) => ShowMainWindow());
+                contextMenuStrip.Items.Add("Quit", null, (s, args) => Quit());
+                _notifyIcon.ContextMenuStrip = contextMenuStrip;
+                _notifyIcon.DoubleClick += (s, args) => ShowMainWindow();
+            }
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e) {
+            if (!isExit) {
+                e.Cancel = true;
+                MainWindow.Hide();
+            }
+        }
+
+        private void MainWindow_Closed(object? sender, System.EventArgs e) {
+            isExit = true;
+            Quit();
+        }
+
+        private void ShowMainWindow() {
+            if (MainWindow.IsVisible) {
+                if (MainWindow.WindowState == SysWin.WindowState.Minimized) {
+                    MainWindow.WindowState = SysWin.WindowState.Normal;
+                }
+                MainWindow.Activate();
+            } else {
+                MainWindow.Show();
+            }
         }
 
         private void HandleSerialUpdateTimer() {
@@ -93,19 +162,22 @@ namespace UnykachAio240Display {
             this.settings.UpdateFrequencySeconds = updateFrequencySeconds;
             this.settings.Save();
             this.HandleSerialUpdateTimer();
-        }   
+        }
 
         private void SendSerialUpdate(object? sender, EventArgs e) {
             if (this.settings?.SensorIdentifier != null) {
                 float? value = this.HardwareMonitor.GetMeasurement(this.settings.SensorIdentifier);
                 if (value.HasValue) {
-
                     int intVal = (int)Math.Truncate(value.Value);
-                    this.Spc.SendInt(intVal);
-                    if(this.MainWindow != null) {
-                        OnDataUpdated(new DataEventArgs(value.Value));
-                    }
 
+                    if (!prevIntVal.HasValue || prevIntVal.Value != intVal) {
+                        this.Spc.SendInt(intVal);
+                        if (this.MainWindow != null) {
+                            OnDataUpdated(new DataEventArgs(value.Value));
+                        }
+
+                        prevIntVal = intVal;
+                    }
                 }
             }
         }

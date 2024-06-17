@@ -11,11 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\temp33.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="WPF-UI" Version="3.0.4" />
-    <Resource Include="Assets/temp33.ico" />
-	 <SupportedPlatform Include="Windows" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\temp33.ico" />
   </ItemGroup>
 
 </Project>

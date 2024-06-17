@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Temp33", "Temp33.csproj", "{CA178DBF-D877-4804-979C-362D225C1B84}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Temp33Setup", "..\Temp33Setup\Temp33Setup.vdproj", "{12570738-AEBD-45D3-BDC2-D3C797639D93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{CA178DBF-D877-4804-979C-362D225C1B84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA178DBF-D877-4804-979C-362D225C1B84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA178DBF-D877-4804-979C-362D225C1B84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12570738-AEBD-45D3-BDC2-D3C797639D93}.Debug|Any CPU.ActiveCfg = Debug
+		{12570738-AEBD-45D3-BDC2-D3C797639D93}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

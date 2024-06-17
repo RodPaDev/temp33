@@ -1,7 +1,7 @@
 ﻿using System.Management;
 using System.IO.Ports;
 using System.Diagnostics;
-using UnykachAio240Display;
+using Temp33;
 namespace SerialCommunicator;
 
 public class SerialPortCommunicator {

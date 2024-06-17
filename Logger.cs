@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace UnykachAio240Display;
+namespace Temp33;
 
 public static class Logger {
     private static readonly string logFilePath = Path.Combine(AppConstants.SettingsDirectory, "log.txt");

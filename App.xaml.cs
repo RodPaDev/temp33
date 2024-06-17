@@ -8,8 +8,9 @@ using SysWin = System.Windows;
 using Ui = Wpf.Ui.Controls;
 using System.IO;
 using System;
+using Microsoft.Win32;
 
-namespace UnykachAio240Display {
+namespace Temp33 {
 
 
 
@@ -65,6 +66,20 @@ namespace UnykachAio240Display {
             Environment.Exit(0);
         }
 
+        public static void SetStartup(bool isEnabled) {
+            string appName = AppConstants.AppTitle;
+            string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+
+            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            if (key != null) {
+                if (isEnabled) {
+                    key.SetValue(appName, appPath);
+                } else {
+                    key.DeleteValue(appName, false);
+                }
+            }
+        }
+
         protected override void OnStartup(SysWin.StartupEventArgs e) {
             base.OnStartup(e);
             this._mainWindow = new MainWindow(this);
@@ -106,7 +121,7 @@ namespace UnykachAio240Display {
 
                 this._mainWindow.Closing += MainWindow_Closing;
 
-                Stream iconStream = GetResourceStream(new Uri("pack://application:,,,/UnykachAio240Display;component/Assets/temp33.ico")).Stream;
+                Stream iconStream = GetResourceStream(new Uri("pack://application:,,,/Temp33;component/Assets/temp33.ico")).Stream;
                 Icon icon = new(iconStream);
                 // Set up the notify icon
                 _notifyIcon = new NotifyIcon {

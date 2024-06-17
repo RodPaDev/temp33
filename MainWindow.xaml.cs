@@ -11,7 +11,7 @@ using SysWinCtrl = System.Windows.Controls;
 using SnackbarService = Wpf.Ui.SnackbarService;
 
 
-namespace UnykachAio240Display {
+namespace Temp33 {
     public interface IWindow {
         event SysWin.RoutedEventHandler Loaded;
         void Show();
@@ -111,6 +111,19 @@ namespace UnykachAio240Display {
             }
         }
 
+        private bool? _backingIsStartupValue;
+        public bool? IsStartupValue {
+            get => _backingIsStartupValue;
+            set {
+                if (_backingIsStartupValue != value) {
+                    _backingIsStartupValue = value;
+                    OnPropertyChanged(nameof(IsStartupValue));
+
+                    bool startupFlag = value ?? false;
+                    App.SetStartup(startupFlag);
+                }
+            }
+        }
         public MainWindow(App app) {
             this.SnackbarService = new SnackbarService();
 

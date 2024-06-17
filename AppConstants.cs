@@ -1,5 +1,5 @@
 ﻿using System.IO;
-namespace UnykachAio240Display;
+namespace Temp33;
 
 
 public static class AppConstants {
@@ -12,6 +12,8 @@ public static class AppConstants {
     static AppConstants() {
         Directory.CreateDirectory(SettingsDirectory);
     }
+
+    public const string AppTitle = "Temp33";
 
 
 }

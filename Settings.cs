@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace UnykachAio240Display;
+namespace Temp33;
 public class Settings(int updateFrequencySeconds = 1) {
     public string Version => Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? "Unknown";
     public int UpdateFrequencySeconds { get; set; } = updateFrequencySeconds;

@@ -35,7 +35,7 @@ namespace Temp33 {
 
         public bool isOpenFail = false;
         private bool isExit = false;
-        private bool isFirstLaunch = true;
+        public bool isFirstLaunch = true;
         private int? prevIntVal = null;
 
         public App() {
@@ -74,7 +74,7 @@ namespace Temp33 {
             string appName = AppConstants.AppTitle;
             string appPath = Application.ExecutablePath;
 
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            RegistryKey? key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             if (key != null) {
                 if (isEnabled) {
                     key.SetValue(appName, appPath);
@@ -86,7 +86,7 @@ namespace Temp33 {
 
         public static bool GetStartupValue() {
             string appName = AppConstants.AppTitle;
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            RegistryKey? key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             if (key != null) {
                 return key.GetValue(appName) != null;
             }

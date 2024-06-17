@@ -63,7 +63,7 @@ namespace Temp33 {
 
         protected void Quit(bool deleteSettings = false) {
             if (deleteSettings) {
-                this.settings.Delete();
+                Settings.Delete();
             }
             this.Spc.Close();
             this.HardwareMonitor.Close();
@@ -176,7 +176,7 @@ namespace Temp33 {
                 contextMenuStrip.Items.Add("Open", null, (s, args) => ShowMainWindow());
                 contextMenuStrip.Items.Add("Quit", null, (s, args) => Quit());
                 _notifyIcon.ContextMenuStrip = contextMenuStrip;
-                _notifyIcon.DoubleClick += (s, args) => ShowMainWindow();
+                _notifyIcon.Click += (s, args) => ShowMainWindow();
             }
         }
 

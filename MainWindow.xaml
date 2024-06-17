@@ -72,7 +72,7 @@
                 <ui:Button Click="SaveChanges__Click" Grid.Row="1" Grid.Column="1" Appearance="Primary" Content="Save Changes" HorizontalAlignment="Center" Margin="0,10"/>
 
             </StackPanel>
-            <ui:HyperlinkButton  VerticalAlignment="Bottom" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" Icon="{ui:SymbolIcon CodeBlock20}" NavigateUri="https://github.com/rodpadev" Content="Made with ❤️ by rodpadev"/>
+            <ui:HyperlinkButton  VerticalAlignment="Bottom" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1" Icon="{ui:SymbolIcon CodeBlock20}" NavigateUri="https://github.com/rodpadev/temp33" Content="Made with ❤️ by rodpadev"/>
 
 
 

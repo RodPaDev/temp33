@@ -38,6 +38,7 @@ namespace Temp33 {
         public SnackbarService SnackbarService { get; set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
+        public bool isInitialized = false;
 
         /* Combo Boxes */
         public ObservableCollection<SysWinCtrl.ComboBoxItem> HardwareItems { get; private set; }
@@ -120,6 +121,7 @@ namespace Temp33 {
                     OnPropertyChanged(nameof(IsStartupValue));
 
                     bool startupFlag = value ?? false;
+                    if(!isInitialized) return;
                     App.SetStartup(startupFlag);
                 }
             }
@@ -136,6 +138,7 @@ namespace Temp33 {
             this.SensorItems = [];
             /* Text Block */
             this.DisplayValueText = "33";
+            this.IsStartupValue = App.GetStartupValue();
 
             /* Load Settings */
 
@@ -153,6 +156,7 @@ namespace Temp33 {
             }
 
             app.DataUpdated += App_DataUpdated;
+            isInitialized = true;
         }
 
         private void LoadFromSettings() {

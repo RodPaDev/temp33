@@ -9,6 +9,7 @@ using Ui = Wpf.Ui.Controls;
 using System.IO;
 using System;
 using Microsoft.Win32;
+using System.Security.Principal;
 
 namespace Temp33 {
 
@@ -60,7 +61,10 @@ namespace Temp33 {
             }
         }
 
-        protected void Quit() {
+        protected void Quit(bool deleteSettings = false) {
+            if (deleteSettings) {
+                this.settings.Delete();
+            }
             this.Spc.Close();
             this.HardwareMonitor.Close();
             Environment.Exit(0);
@@ -68,7 +72,7 @@ namespace Temp33 {
 
         public static void SetStartup(bool isEnabled) {
             string appName = AppConstants.AppTitle;
-            string appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string appPath = Application.ExecutablePath;
 
             RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
             if (key != null) {
@@ -78,6 +82,15 @@ namespace Temp33 {
                     key.DeleteValue(appName, false);
                 }
             }
+        }
+
+        public static bool GetStartupValue() {
+            string appName = AppConstants.AppTitle;
+            RegistryKey? key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            if (key != null) {
+                return key.GetValue(appName) != null;
+            }
+            return false;
         }
 
         protected override void OnStartup(SysWin.StartupEventArgs e) {
@@ -94,12 +107,28 @@ namespace Temp33 {
                         TextWrapping = SysWin.TextWrapping.Wrap,
                     },
                 };
+                System.Media.SystemSounds.Exclamation.Play();
                 messageBox.ShowDialogAsync();
-                this.Quit();
+                this.Quit(this.isFirstLaunch);
             }
 
-            this.InitNotifyIcon();
+            if(!IsUserAdministrator()) {
+                Ui.MessageBox messageBox = new Ui.MessageBox() {
+                    Title = "Administrator Required",
+                    
+                    Content = new Ui.TextBlock {
+                        Text = "To read hardware sensor data, the application requires administrator privileges. Please restart the application as an administrator.",
+                        TextWrapping = SysWin.TextWrapping.Wrap,
+                    },
+                };
+                System.Media.SystemSounds.Exclamation.Play();
+                messageBox.ShowDialogAsync();
+                this.Quit(this.isFirstLaunch);
+            }
+
+
             if (isFirstLaunch) {
+                SetStartup(true);
                 this.ShowMainWindow();
                 this._mainWindow.SnackbarService.Show(
                     "Minimize Instead of Closing", 
@@ -108,10 +137,24 @@ namespace Temp33 {
                     new Ui.SymbolIcon(Ui.SymbolRegular.Warning12, 14, true), 
                     TimeSpan.FromSeconds(10)
                 );
-            } 
+            }
+            this.InitNotifyIcon();
 
         }
 
+        public static bool IsUserAdministrator() {
+            bool isAdmin;
+            try {
+                WindowsIdentity user = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new (user);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            } catch (UnauthorizedAccessException) {
+                isAdmin = false;
+            } catch (Exception) {
+                isAdmin = false;
+            }
+            return isAdmin;
+        }
 
 
         private void InitNotifyIcon() {

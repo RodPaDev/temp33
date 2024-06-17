@@ -8,7 +8,14 @@
     <UseWPF>true</UseWPF>
 	<UseWindowsForms>true</UseWindowsForms>
 	<Version>0.0.1.0</Version>
+	<ApplicationIcon>Assets\temp33.ico</ApplicationIcon>
+	<PackageIcon>temp33_512x512.jpg</PackageIcon>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Remove="app.manifest" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.3" />
@@ -16,6 +23,13 @@
     <PackageReference Include="WPF-UI" Version="3.0.4" />
     <Resource Include="Assets/temp33.ico" />
 	 <SupportedPlatform Include="Windows" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\temp33_512x512.jpg">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

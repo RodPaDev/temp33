@@ -26,6 +26,11 @@ public class Settings(int updateFrequencySeconds = 1) {
         string json = JsonConvert.SerializeObject(this, Formatting.Indented);
         File.WriteAllText(settingsFilePath, json);
     }
+    public void Delete() {
+        if (File.Exists(settingsFilePath)) {
+            File.Delete(settingsFilePath);
+        }
+    }
 
     public static Settings Load() {
         if (File.Exists(settingsFilePath)) {
